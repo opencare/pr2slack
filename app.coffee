@@ -40,10 +40,16 @@ app.post '/', (req, res) ->
   payload = req.body
   event = req.headers['X-Github-Event']
 
-  if event = 'pull_request' && payload.action in ['opened', 'reopened']
-    text = ":rocket: #{payload.pull_request.user.login} #{payload.action} <#{payload.pull_request.html_url}|#{escape payload.pull_request.title}> (<#{payload.pull_request.base.repo.html_url}|#{escape payload.pull_request.base.repo.name}>). Please take a look."
+  if event = 'pull_request'
+    if payload.action in ['opened', 'reopened'] && payload.base.ref != 'production'
+      # PR created
+      text = ":rocket: #{payload.pull_request.user.login} #{payload.action} <#{payload.pull_request.html_url}|#{escape payload.pull_request.title}> (<#{payload.pull_request.base.repo.html_url}|#{escape payload.pull_request.base.repo.name}>). Please take a look."
+    if payload.action = 'closed' && payload.pull_request.merged && payload.base.ref == 'production'
+      # Release merged
+      text = ":robot_face: *#{payload.pull_request.user.login} released <#{payload.pull_request.html_url}|#{escape payload.pull_request.title}>*\n#{escape payload.pull_request.body}"
 
   if event = 'issue_comment' && payload.comment && /^(:[A-Za-z1-9_+-]+:\s*)+$/.test payload.comment.body
+    # Shipit given
     text = "#{payload.comment.user.login} gave <#{payload.issue.html_url}|#{payload.issue.title}> (<#{payload.repository.html_url}|#{payload.repository.name}>) a #{payload.comment.body}"
 
   return res.json 200 unless text?

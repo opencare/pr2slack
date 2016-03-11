@@ -4,7 +4,7 @@ request = require 'request'
 
 missing = []
 
-for key in ['USERNAME', 'PASSWORD', 'SLACK_WEBHOOK_URI']
+for key in ['USERNAME', 'PASSWORD', 'SLACK_WEBHOOK_URI', 'SLACK_RELEASE_WEBHOOK_URI']
   missing.push key unless key of process.env
 
 throw "Missing environment variables: #{missing.join ', '}" if missing.length
@@ -39,6 +39,7 @@ escape = (string) ->
 app.post '/', (req, res) ->
   payload = req.body
   event = req.headers['X-Github-Event']
+  uri = process.env.SLACK_WEBHOOK_URI
 
   if event = 'pull_request'
     if payload.action in ['opened', 'reopened'] && payload.base.ref != 'production'
@@ -46,6 +47,7 @@ app.post '/', (req, res) ->
       text = ":rocket: #{payload.pull_request.user.login} #{payload.action} <#{payload.pull_request.html_url}|#{escape payload.pull_request.title}> (<#{payload.pull_request.base.repo.html_url}|#{escape payload.pull_request.base.repo.name}>). Please take a look."
     if payload.action = 'closed' && payload.pull_request.merged && payload.base.ref == 'production'
       # Release merged
+      uri = process.env.SLACK_RELEASE_WEBHOOK_URI
       text = ":robot_face: *#{payload.pull_request.user.login} released <#{payload.pull_request.html_url}|#{escape payload.pull_request.title}>*\n#{escape payload.pull_request.body}"
 
   if event = 'issue_comment' && payload.comment && /^(:[A-Za-z1-9_+-]+:\s*)+$/.test payload.comment.body
@@ -56,7 +58,7 @@ app.post '/', (req, res) ->
 
   options =
     method: 'POST'
-    uri: process.env.SLACK_WEBHOOK_URI
+    uri: uri
     json:
       text: text
       username: 'github'

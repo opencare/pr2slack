@@ -43,16 +43,16 @@ app.post '/', (req, res) ->
 
   # PR created
   if ghEvent = 'pull_request' && payload.action in ['opened', 'reopened'] && payload.pull_request?.base?.ref != 'production'
-    text = ":rocket: #{payload.pull_request.user.login} #{payload.action} <#{payload.pull_request.html_url}|#{escape payload.pull_request.title}> (<#{payload.pull_request.base.repo.html_url}|#{escape payload.pull_request.base.repo.name}>). Please take a look."
+    text = ":rocket: #{payload.pull_request.user.login} #{payload.action} a pull request in <#{payload.pull_request.base.repo.html_url}|#{escape payload.pull_request.base.repo.name}>\n*<#{payload.pull_request.html_url}|#{escape payload.pull_request.title}>*"
 
   # Release merged
   if ghEvent = 'pull_request' && payload.action = 'closed' && payload.pull_request?.merged && payload.pull_request?.base?.ref == 'production'
     uri = process.env.SLACK_RELEASE_WEBHOOK_URI
-    text = ":robot_face: *#{payload.pull_request.user.login} released <#{payload.pull_request.html_url}|#{escape payload.pull_request.title}>*\n#{escape payload.pull_request.body}"
+    text = ":robot_face: #{payload.pull_request.user.login} released <#{payload.pull_request.base.repo.html_url}|#{escape payload.pull_request.base.repo.name}>)\n*<#{payload.pull_request.html_url}|#{escape payload.pull_request.title}>*\n#{escape payload.pull_request.body}"
 
   # Shipit given
   if ghEvent = 'issue_comment' && payload.comment && /^(:[A-Za-z1-9_+-]+:\s*)+$/.test payload.comment.body
-    text = "#{payload.comment.user.login} gave <#{payload.issue.html_url}|#{payload.issue.title}> (<#{payload.repository.html_url}|#{payload.repository.name}>) a #{payload.comment.body}"
+    text = "#{payload.comment.body} from #{payload.comment.user.login}! on a PR in <#{payload.repository.html_url}|#{payload.repository.name}>\n<#{payload.issue.html_url}|#{payload.issue.title}>"
 
   return res.json 200 unless text?
 

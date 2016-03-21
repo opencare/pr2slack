@@ -48,7 +48,7 @@ app.post '/', (req, res) ->
   # Release merged
   if ghEvent = 'pull_request' && payload.action = 'closed' && payload.pull_request?.merged && payload.pull_request?.base?.ref == 'production'
     uri = process.env.SLACK_RELEASE_WEBHOOK_URI
-    text = ":robot_face: #{payload.pull_request.user.login} released <#{payload.pull_request.base.repo.html_url}|#{escape payload.pull_request.base.repo.name}>)\n*<#{payload.pull_request.html_url}|#{escape payload.pull_request.title}>*\n#{escape payload.pull_request.body}"
+    text = ":robot_face: #{payload.pull_request.user.login} released <#{payload.pull_request.base.repo.html_url}|#{escape payload.pull_request.base.repo.name}>\n*<#{payload.pull_request.html_url}|#{escape payload.pull_request.title}>*\n#{escape payload.pull_request.body}"
 
   # Shipit given
   if ghEvent = 'issue_comment' && payload.comment && /^(:[A-Za-z1-9_+-]+:\s*)+$/.test payload.comment.body

@@ -50,7 +50,7 @@ app.post '/', (req, res) ->
     uri = process.env.SLACK_RELEASE_WEBHOOK_URI
     text = ":robot_face: #{payload.pull_request.user.login} released <#{payload.pull_request.base.repo.html_url}|#{escape payload.pull_request.base.repo.name}>\n\n"
     text += "*<#{payload.pull_request.html_url}|#{escape payload.pull_request.title}>*\n\n"
-    body = "#{escape payload.pull_request.body}".replace(/\[#(\d+)\]/, "<https://www.pivotaltracker.com/story/show/$1|[#$1]>")
+    body = "#{escape payload.pull_request.body}".replace(/\[#(\d+)\]/g, "<https://www.pivotaltracker.com/story/show/$1|[#$1]>")
     text += body
 
   # Shipit given

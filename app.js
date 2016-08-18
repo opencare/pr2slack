@@ -25,6 +25,7 @@ app.use(express.bodyParser());
 var apiToken = process.env.SLACK_API_TOKEN;
 
 var slackWebhook = new Slack();
+slackWebhook.setWebhook(uri);
 var slackAPI = new Slack(apiToken);
 
 var githubToSlack = {
@@ -122,7 +123,6 @@ app.post('/', function(req, res) {
   }
 
   if (resType == ResType.Webhook) {
-    slackWebhook.setWebhook(uri);
     slackWebhook.webhook({
       text: text,
       username: slackBotUsername,

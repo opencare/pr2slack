@@ -9,7 +9,7 @@ var slackBotIconURL = 'https://slack-assets2.s3-us-west-2.amazonaws.com/10562/im
 
 var requiredEnvVars = ['USERNAME', 'PASSWORD', 'SLACK_WEBHOOK_URI', 'SLACK_RELEASE_WEBHOOK_URI', 'SLACK_API_TOKEN'];
 if (_.intersection(_.keys(process.env), requiredVars).length != requiredVars.length) {
-  throw 'Missing environment variables: ';
+  throw 'Missing environment variables';
 }
 
 var app = express();
@@ -25,7 +25,6 @@ app.use(express.bodyParser());
 var apiToken = process.env.SLACK_API_TOKEN;
 
 var slackWebhook = new Slack();
-slackWebhook.setWebhook(uri);
 var slackAPI = new Slack(apiToken);
 
 var githubToSlack = {
@@ -110,9 +109,7 @@ app.post('/', function(req, res) {
     if (shipitGiven) {
       resType = ResType.Webhook;
       text = payload.comment.body + ' from ' + payload.comment.user.login + '! on a PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
-    }
-    // Feedback given
-    else {
+    } else { // Feedback given
       resType = ResType.API;
 
       if (payload.comment.user.login in pivotalToSlack) {
@@ -123,6 +120,7 @@ app.post('/', function(req, res) {
   }
 
   if (resType == ResType.Webhook) {
+    slackWebhook.setWebhook(uri);
     slackWebhook.webhook({
       text: text,
       username: slackBotUsername,

@@ -3,6 +3,7 @@ var logfmt = require('logfmt');
 var request = require('request');
 var _ = require('lodash');
 var Slack = require('slack-node');
+var S = require('string');
 
 var slackBotUsername = 'github';
 var slackBotIconURL = 'https://slack-assets2.s3-us-west-2.amazonaws.com/10562/img/services/github_48.png';
@@ -22,43 +23,17 @@ app.use(express.basicAuth(function(username, password) {
 
 app.use(express.bodyParser());
 
-var apiToken = process.env.SLACK_API_TOKEN;
-
 var slackWebhook = new Slack();
-var slackAPI = new Slack(apiToken);
+var slackAPI = new Slack(process.env.SLACK_API_TOKEN);
 
 var githubToSlack = {
-  'camthesixth': 'cam',
-  'davidjconnolly': 'dave',
-  'leeopencare': 'lee',
-  'paulfeltoe': 'paul',
-  'nivivon': 'nivivon',
-  'RonenA': 'ronen',
-  'vadim-zverugo': 'vadim'
-};
-
-var unescaped = /[&<>]/;
-
-// Can't use underscore's escape because quotes are already escaped in Slack by
-// default.
-var htmlEscapes = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;'
-};
-
-var htmlEscapesKeys = _.keys(htmlEscapes);
-var reUnescapedHtml = new RegExp(htmlEscapesKeys.join(''), 'g');
-
-var escapeHtmlChar = function(match) {
-  return htmlEscapes[match];
-};
-
-var escape = function(string) {
-  if (string == null) {
-    return '';
-  }
-  return String(string).replace(reUnescapedHtml, escapeHtmlChar);
+  camthesixth: 'cam',
+  davidjconnolly: 'dave',
+  leeopencare: 'lee',
+  paulfeltoe: 'paul',
+  nivivon: 'nivivon',
+  RonenA: 'ronen',
+  vadim-zverugo: 'vadim'
 };
 
 var ResType = {
@@ -86,17 +61,17 @@ app.post('/', function(req, res) {
   // PR
   if (ghEvent == 'pull_request') {
     resType = ResType.Webhook;
-    var prCreated = payload.action == 'opened' || payload.action == 'reopened';
+    var prCreated = _.includes(['opened', 'reopened'], payload.action);
     var releaseMerged = payload.action == 'closed';
-    var prDataExists = payload.pull_request && payload.pull_request.base;
+    var prDataExists = !!_.get(payload, 'pull_request.base');
     if (prDataExists) {
       if (prCreated && payload.pull_request.base.ref != 'production') {
-        text = ':rocket: ' + payload.pull_request.user.login + ' ' + payload.action + ' a pull request in <' + payload.pull_request.base.repo.html_url + '|' + (escape(payload.pull_request.base.repo.name)) + '>\n*<' + payload.pull_request.html_url + '|' + (escape(payload.pull_request.title)) + '>*';
+        text = ':rocket: ' + payload.pull_request.user.login + ' ' + payload.action + ' a pull request in <' + payload.pull_request.base.repo.html_url + '|' + (S(payload.pull_request.base.repo.name).escapeHTML().s) + '>\n*<' + payload.pull_request.html_url + '|' + (S(payload.pull_request.title).escapeHTML().s) + '>*';
       } else if (releaseMerged && payload.action == 'closed' && payload.pull_request.merged && payload.pull_request.base.ref == 'production') {
         uri = process.env.SLACK_RELEASE_WEBHOOK_URI;
-        text = ':robot_face: ' + payload.pull_request.user.login + ' released <' + payload.pull_request.base.repo.html_url + '|' + (escape(payload.pull_request.base.repo.name)) + '>\n\n';
-        text += '*<' + payload.pull_request.html_url + '|' + (escape(payload.pull_request.title)) + '>*\n\n';
-        body = ('' + (escape(payload.pull_request.body))).replace(/\[#(\d+)\]/g, '<https://www.pivotaltracker.com/story/show/$1|[#$1]>');
+        text = ':robot_face: ' + payload.pull_request.user.login + ' released <' + payload.pull_request.base.repo.html_url + '|' + (S(payload.pull_request.base.repo.name).escapeHTML().s) + '>\n\n';
+        text += '*<' + payload.pull_request.html_url + '|' + (S(payload.pull_request.title).escapeHTML().s) + '>*\n\n';
+        body = ('' + (S(payload.pull_request.body).escapeHTML().s)).replace(/\[#(\d+)\]/g, '<https://www.pivotaltracker.com/story/show/$1|[#$1]>');
         text += body;
       }
     }
@@ -129,7 +104,7 @@ app.post('/', function(req, res) {
   } else if (resType == ResType.API) {
     slackAPI.api('chat.postMessage', {
       text: text,
-       channel: '@' + username,
+      channel: '@' + username,
       username: slackBotUsername,
       icon_url: slackBotIconURL
     }, handleResponse);

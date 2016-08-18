@@ -78,6 +78,7 @@ app.post('/', function(req, res) {
   var uri = process.env.SLACK_WEBHOOK_URI;
 
   var resType;
+  var username;
 
   // PR
   if (ghEvent == 'pull_request') {
@@ -110,13 +111,20 @@ app.post('/', function(req, res) {
     // Feedback given
     else {
       resType = ResType.API;
-      var pivotalToSlack = {
-        "nivivon": "nivivon"
+      var githubToSlack = {
+        "camthesixth": "cam",
+        "davidjconnolly": "dave",
+        "leeopencare": "lee",
+        "paulfeltoe": "paul",
+        "nivivon": "nivivon",
+        "RonenA": "ronen",
+        "vadim-zverugo": "vadim"
       };
 
-      var slackUsername = pivotalToSlack[payload.comment.user.login];
-
-      text = payload.comment.body + " from " + payload.comment.user.login + "! on a PR in <" + payload.repository.html_url + "|" + payload.repository.name + ">\n<" + payload.issue.html_url + "|" + payload.issue.title + ">";
+      if (payload.comment.user.login in pivotalToSlack) {
+        username = githubToSlack[payload.issue.user.login];
+        text = payload.comment.user.login + " commented on your PR in <" + payload.repository.html_url + "|" + payload.repository.name + ">: " + payload.comment.body + "\n<" + payload.issue.html_url + "|" + payload.issue.title + ">";
+      }
     }
   }
 
@@ -138,7 +146,7 @@ app.post('/', function(req, res) {
     var slack = new Slack(apiToken);
     slack.api('chat.postMessage', {
       text:text,
-      channel:"@" + slackUsername,
+      channel:"@" + username,
       username: slackBotUsername,
       icon_url: slackBotIconURL
    }, handleResponse);

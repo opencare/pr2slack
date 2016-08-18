@@ -2,16 +2,18 @@
   "name": "pr2slack",
   "version": "0.0.0",
   "description": "PR -> Slack",
-  "main": "app.coffee",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Rob Hanlon",
+  "author": "Opencare",
   "dependencies": {
-    "logfmt": "~0.20.0",
-    "express": "~3.4.8",
     "coffee-script": "~1.7.1",
-    "request": "~2.33.0"
+    "express": "~3.4.8",
+    "lodash": "^3.1.0",
+    "logfmt": "~0.20.0",
+    "request": "~2.33.0",
+    "slack-node": "^0.2.0"
   },
   "engines": {
     "node": "0.10.x"

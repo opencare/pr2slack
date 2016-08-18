@@ -1,7 +1,7 @@
 var express = require('express');
 var logfmt = require('logfmt');
 var request = require('request');
-var slack = require('slack-node');
+var Slack = require('slack-node');
 
 var missing = [];
 
@@ -58,13 +58,30 @@ var escape = function(string) {
   return String(string).replace(reUnescapedHtml, escapeHtmlChar);
 };
 
+var ResType = {
+  Webhook: 0,
+  API: 1
+};
+
+var handleResponse = function(err, response) {
+  if (err) {
+    return res.json(500, err);
+  } else {
+    return res.json(response.statusCode, body);
+  }
+};
+
 app.post('/', function(req, res) {
+
   var payload = req.body;
   var ghEvent = req.headers['x-github-event'];
   var uri = process.env.SLACK_WEBHOOK_URI;
 
+  var resType;
+
   // PR
   if (ghEvent == 'pull_request') {
+    resType = ResType.Webhook;
     var prCreated = payload.action == 'opened' || payload.action == 'reopened';
     var releaseMerged = payload.action == 'closed';
     var prDataExists = payload.pull_request && payload.pull_request.base;
@@ -87,51 +104,46 @@ app.post('/', function(req, res) {
     var shipitGiven = /^(:[A-Za-z1-9_+-]+:\s*)+$/.test(payload.comment.body);
     // Shipit given
     if (shipitGiven) {
+      resType = ResType.Webhook;
       text = payload.comment.body + " from " + payload.comment.user.login + "! on a PR in <" + payload.repository.html_url + "|" + payload.repository.name + ">\n<" + payload.issue.html_url + "|" + payload.issue.title + ">";
     }
     // Feedback given
     else {
+      resType = ResType.API;
       var pivotalToSlack = {
         "nivivon": "nivivon"
       };
 
       var slackUsername = pivotalToSlack[payload.comment.user.login];
 
-      var apiText = payload.comment.body + " from " + payload.comment.user.login + "! on a PR in <" + payload.repository.html_url + "|" + payload.repository.name + ">\n<" + payload.issue.html_url + "|" + payload.issue.title + ">";
-      // !webhook;
-      // TODO call API here vs webhook
-      slack.api('chat.postMessage', {
-        text:apiText,
-        channel:"@" + slackUsername,
-       username: slackBotUsername,
-       icon_url: slackBotIconURL
-      }, function(err, response){
-        console.log(response);
-      });
+      text = payload.comment.body + " from " + payload.comment.user.login + "! on a PR in <" + payload.repository.html_url + "|" + payload.repository.name + ">\n<" + payload.issue.html_url + "|" + payload.issue.title + ">";
     }
   }
 
   if (text == null) {
     return res.json(200);
   }
-  var options = {
-    method: 'POST',
-    uri: uri,
-    json: {
+
+  if (resType == ResType.Webhook) {
+    var slack = new Slack();
+    slack.setWebhook(uri);
+    slack.webhook({
       text: text,
       username: slackBotUsername,
       icon_url: slackBotIconURL
-    }
-  };
-  return request(options, function(err, response, body) {
-    if (err) {
-      return res.json(500, err);
-    } else {
-      return res.json(response.statusCode, body);
-    }
-  });
+    }, handleResponse);
+  }
+  else if (resType == ResType.API) {
+    var apiToken = process.env.SLACK_API_TOKEN;
+    var slack = new Slack(apiToken);
+    slack.api('chat.postMessage', {
+      text:text,
+      channel:"@" + slackUsername,
+     username: slackBotUsername,
+     icon_url: slackBotIconURL
+   }, handleResponse);
+  }
 });
-// END of todo
 
 port = !!process.env.PORT ? process.env.PORT : 5000;
 

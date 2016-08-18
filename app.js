@@ -48,7 +48,7 @@ var htmlEscapes = {
 };
 
 var htmlEscapesKeys = _.keys(htmlEscapes);
-var reUnescapedHtml = new RegExp(htmlEscapesKeys.join(''),'g');
+var reUnescapedHtml = new RegExp(htmlEscapesKeys.join(''), 'g');
 
 var escapeHtmlChar = function(match) {
   return htmlEscapes[match];
@@ -92,8 +92,7 @@ app.post('/', function(req, res) {
     if (prDataExists) {
       if (prCreated && payload.pull_request.base.ref != 'production') {
         text = ':rocket: ' + payload.pull_request.user.login + ' ' + payload.action + ' a pull request in <' + payload.pull_request.base.repo.html_url + '|' + (escape(payload.pull_request.base.repo.name)) + '>\n*<' + payload.pull_request.html_url + '|' + (escape(payload.pull_request.title)) + '>*';
-      }
-      else if (releaseMerged && payload.action == 'closed' && payload.pull_request.merged && payload.pull_request.base.ref == 'production') {
+      } else if (releaseMerged && payload.action == 'closed' && payload.pull_request.merged && payload.pull_request.base.ref == 'production') {
         uri = process.env.SLACK_RELEASE_WEBHOOK_URI;
         text = ':robot_face: ' + payload.pull_request.user.login + ' released <' + payload.pull_request.base.repo.html_url + '|' + (escape(payload.pull_request.base.repo.name)) + '>\n\n';
         text += '*<' + payload.pull_request.html_url + '|' + (escape(payload.pull_request.title)) + '>*\n\n';
@@ -129,14 +128,13 @@ app.post('/', function(req, res) {
       username: slackBotUsername,
       icon_url: slackBotIconURL
     }, handleResponse);
-  }
-  else if (resType == ResType.API) {
+  } else if (resType == ResType.API) {
     slackAPI.api('chat.postMessage', {
-      text:text,
-      channel:'@' + username,
+      text: text,
+       channel: '@' + username,
       username: slackBotUsername,
       icon_url: slackBotIconURL
-   }, handleResponse);
+    }, handleResponse);
   }
 });
 

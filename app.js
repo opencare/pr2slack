@@ -30,17 +30,22 @@ app.use(express.bodyParser());
 
 var unescaped = /[&<>]/;
 
-# Can't use underscore's escape because quotes are already escaped in Slack by
-# default.
+// Can't use underscore's escape because quotes are already escaped in Slack by
+// default.
 var htmlEscapes = {
   '&': '&amp;',
   '<': '&lt;',
   '>': '&gt;'
 };
 
-// TODO convert this component
-reUnescapedHtml = RegExp "[#{(k for k of htmlEscapes).join ''}]", 'g'
-// END of todo
+var htmlEscapesKeys = [];
+for (var key in htmlEscapes) {
+  if (htmlEscapes.hasOwnProperty(key)) {
+    htmlEscapesKeys.push(key);
+  }
+}
+
+var reUnescapedHtml = new RegExp(htmlEscapesKeys.join(''),'g');
 
 var escapeHtmlChar = function(match) {
   return htmlEscapes[match];
@@ -53,57 +58,63 @@ var escape = function(string) {
   return String(string).replace(reUnescapedHtml, escapeHtmlChar);
 };
 
-// TODO clean this up
 app.post('/', function(req, res) {
-  var body, options, ref, ref1, ref2, ref3, ref4, ref5, text;
   var payload = req.body;
   var ghEvent = req.headers['x-github-event'];
   var uri = process.env.SLACK_WEBHOOK_URI;
 
-  var pivotalToSlack = {
-    "nivivon": "nivivon"
-  };
-
-  // PR created
-  if (ghEvent = 'pull_request' && ((ref = payload.action) === 'opened' || ref === 'reopened') && ((ref1 = payload.pull_request) != null ? (ref2 = ref1.base) != null ? ref2.ref : void 0 : void 0) !== 'production') {
-    text = ":rocket: " + payload.pull_request.user.login + " " + payload.action + " a pull request in <" + payload.pull_request.base.repo.html_url + "|" + (escape(payload.pull_request.base.repo.name)) + ">\n*<" + payload.pull_request.html_url + "|" + (escape(payload.pull_request.title)) + ">*";
+  // PR
+  if (ghEvent == 'pull_request') {
+    var prCreated = payload.action == 'opened' || payload.action == 'reopened';
+    var releaseMerged = payload.action == 'closed';
+    var prDataExists = payload.pull_request && payload.pull_request.base;
+    if (prDataExists) {
+      if (prCreated && payload.pull_request.base.ref != 'production') {
+        text = ":rocket: " + payload.pull_request.user.login + " " + payload.action + " a pull request in <" + payload.pull_request.base.repo.html_url + "|" + (escape(payload.pull_request.base.repo.name)) + ">\n*<" + payload.pull_request.html_url + "|" + (escape(payload.pull_request.title)) + ">*";
+      }
+      else if (releaseMerged && payload.action == 'closed' && payload.pull_request.merged && payload.pull_request.base.ref == 'production') {
+        uri = process.env.SLACK_RELEASE_WEBHOOK_URI;
+        text = ":robot_face: " + payload.pull_request.user.login + " released <" + payload.pull_request.base.repo.html_url + "|" + (escape(payload.pull_request.base.repo.name)) + ">\n\n";
+        text += "*<" + payload.pull_request.html_url + "|" + (escape(payload.pull_request.title)) + ">*\n\n";
+        body = ("" + (escape(payload.pull_request.body))).replace(/\[#(\d+)\]/g, "<https://www.pivotaltracker.com/story/show/$1|[#$1]>");
+        text += body;
+      }
+    }
   }
 
-  // Release merged
-  if (ghEvent = 'pull_request' && (payload.action = 'closed' && ((ref3 = payload.pull_request) != null ? ref3.merged : void 0) && ((ref4 = payload.pull_request) != null ? (ref5 = ref4.base) != null ? ref5.ref : void 0 : void 0) === 'production')) {
-    uri = process.env.SLACK_RELEASE_WEBHOOK_URI;
-    text = ":robot_face: " + payload.pull_request.user.login + " released <" + payload.pull_request.base.repo.html_url + "|" + (escape(payload.pull_request.base.repo.name)) + ">\n\n";
-    text += "*<" + payload.pull_request.html_url + "|" + (escape(payload.pull_request.title)) + ">*\n\n";
-    body = ("" + (escape(payload.pull_request.body))).replace(/\[#(\d+)\]/g, "<https://www.pivotaltracker.com/story/show/$1|[#$1]>");
-    text += body;
+  // Issue comment
+  if (ghEvent == 'issue_comment' && payload.comment) {
+    var shipitGiven = /^(:[A-Za-z1-9_+-]+:\s*)+$/.test(payload.comment.body);
+    // Shipit given
+    if (shipitGiven) {
+      text = payload.comment.body + " from " + payload.comment.user.login + "! on a PR in <" + payload.repository.html_url + "|" + payload.repository.name + ">\n<" + payload.issue.html_url + "|" + payload.issue.title + ">";
+    }
+    // Feedback given
+    else {
+      var pivotalToSlack = {
+        "nivivon": "nivivon"
+      };
+
+      var slackUsername = pivotalToSlack[payload.comment.user.login];
+
+      var apiText = payload.comment.body + " from " + payload.comment.user.login + "! on a PR in <" + payload.repository.html_url + "|" + payload.repository.name + ">\n<" + payload.issue.html_url + "|" + payload.issue.title + ">";
+      // !webhook;
+      // TODO call API here vs webhook
+      slack.api('chat.postMessage', {
+        text:apiText,
+        channel:"@" + slackUsername,
+       username: slackBotUsername,
+       icon_url: slackBotIconURL
+      }, function(err, response){
+        console.log(response);
+      });
+    }
   }
 
-  // Shipit given
-  if (ghEvent = 'issue_comment' && payload.comment && /^(:[A-Za-z1-9_+-]+:\s*)+$/.test(payload.comment.body)) {
-    text = payload.comment.body + " from " + payload.comment.user.login + "! on a PR in <" + payload.repository.html_url + "|" + payload.repository.name + ">\n<" + payload.issue.html_url + "|" + payload.issue.title + ">";
-  }
-
-  // Feedback given
-  if (ghEvent = 'issue_comment' && payload.comment && !(/^(:[A-Za-z1-9_+-]+:\s*)+$/.test(payload.comment.body))) {
-    var slackUsername = pivotalToSlack[payload.comment.user.login];
-
-    text = payload.comment.body + " from " + payload.comment.user.login + "! on a PR in <" + payload.repository.html_url + "|" + payload.repository.name + ">\n<" + payload.issue.html_url + "|" + payload.issue.title + ">";
-    // !webhook;
-    // TODO call API here vs webhook
-    slack.api('chat.postMessage', {
-      text:text,
-      channel:"@" + slackUsername,
-     username: slackBotUsername,
-     icon_url: slackBotIconURL
-    }, function(err, response){
-      console.log(response);
-    });
-
-  }
   if (text == null) {
     return res.json(200);
   }
-  options = {
+  var options = {
     method: 'POST',
     uri: uri,
     json: {

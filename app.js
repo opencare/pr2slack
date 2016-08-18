@@ -4,14 +4,12 @@ var request = require('request');
 var _ = require('lodash');
 var Slack = require('slack-node');
 
-var missing = [];
-
 var slackBotUsername = 'github';
 var slackBotIconURL = 'https://slack-assets2.s3-us-west-2.amazonaws.com/10562/img/services/github_48.png';
 
 var requiredEnvVars = ['USERNAME', 'PASSWORD', 'SLACK_WEBHOOK_URI', 'SLACK_RELEASE_WEBHOOK_URI', 'SLACK_API_TOKEN'];
 if (_.intersection(_.keys(process.env), requiredVars).length != requiredVars.length) {
-  throw 'Missing environment variables: ' + (missing.join(', '));
+  throw 'Missing environment variables: ';
 }
 
 var app = express();

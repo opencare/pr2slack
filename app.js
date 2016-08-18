@@ -33,7 +33,7 @@ var githubToSlack = {
   paulfeltoe: 'paul',
   nivivon: 'nivivon',
   RonenA: 'ronen',
-  vadim-zverugo: 'vadim'
+  'vadim-zverugo': 'vadim'
 };
 
 var ResType = {

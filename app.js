@@ -139,8 +139,8 @@ app.post('/', function(req, res) {
     slack.api('chat.postMessage', {
       text:text,
       channel:"@" + slackUsername,
-     username: slackBotUsername,
-     icon_url: slackBotIconURL
+      username: slackBotUsername,
+      icon_url: slackBotIconURL
    }, handleResponse);
   }
 });

@@ -46,7 +46,7 @@ var handleResponse = function(res) {
     if (err) {
       return res.json(500, err);
     } else {
-      return res.json(response.statusCode, body);
+      return res.json(200);
     }
   };
 };
@@ -73,7 +73,7 @@ app.post('/', function(req, res) {
         uri = process.env.SLACK_RELEASE_WEBHOOK_URI;
         text = ':robot_face: ' + payload.pull_request.user.login + ' released <' + payload.pull_request.base.repo.html_url + '|' + (S(payload.pull_request.base.repo.name).escapeHTML().s) + '>\n\n';
         text += '*<' + payload.pull_request.html_url + '|' + (S(payload.pull_request.title).escapeHTML().s) + '>*\n\n';
-        body = ('' + (S(payload.pull_request.body).escapeHTML().s)).replace(/\[#(\d+)\]/g, '<https://www.pivotaltracker.com/story/show/$1|[#$1]>');
+        var body = ('' + (S(payload.pull_request.body).escapeHTML().s)).replace(/\[#(\d+)\]/g, '<https://www.pivotaltracker.com/story/show/$1|[#$1]>');
         text += body;
       }
     }
@@ -81,7 +81,7 @@ app.post('/', function(req, res) {
 
   // Issue comment
   if (ghEvent == 'issue_comment' && payload.comment) {
-    var shipitGiven = /^(:[A-Za-z1-9_+-]+:\s*)+$/.test(payload.comment.body);
+    var shipitGiven = /^([A-Za-z1-9_+-]{1}\s*)+$/.test(payload.comment.body);
     // Shipit given
     if (shipitGiven) {
       resType = ResType.Webhook;
@@ -109,7 +109,7 @@ app.post('/', function(req, res) {
       channel: '@' + username,
       username: slackBotUsername,
       icon_url: slackBotIconURL
-    }, handleResponse);
+    }, handleResponse(res));
   }
 });
 

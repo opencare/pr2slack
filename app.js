@@ -9,7 +9,7 @@ var slackBotUsername = 'github';
 var slackBotIconURL = 'https://slack-assets2.s3-us-west-2.amazonaws.com/10562/img/services/github_48.png';
 
 var requiredEnvVars = ['USERNAME', 'PASSWORD', 'SLACK_WEBHOOK_URI', 'SLACK_RELEASE_WEBHOOK_URI', 'SLACK_API_TOKEN'];
-if (_.intersection(_.keys(process.env), requiredEnvVars).length != requiredVars.length) {
+if (_.intersection(_.keys(process.env), requiredEnvVars).length != requiredEnvVars.length) {
   throw 'Missing environment variables';
 }
 
@@ -41,12 +41,14 @@ var ResType = {
   API: 1
 };
 
-var handleResponse = function(err, response) {
-  if (err) {
-    return res.json(500, err);
-  } else {
-    return res.json(response.statusCode, body);
-  }
+var handleResponse = function(res) {
+  return function(err, response) {
+    if (err) {
+      return res.json(500, err);
+    } else {
+      return res.json(response.statusCode, body);
+    }
+  };
 };
 
 app.post('/', function(req, res) {
@@ -87,7 +89,7 @@ app.post('/', function(req, res) {
     } else { // Feedback given
       resType = ResType.API;
 
-      if (payload.comment.user.login in pivotalToSlack) {
+      if (payload.comment.user.login in githubToSlack) {
         username = githubToSlack[payload.issue.user.login];
         text = payload.comment.user.login + ' commented on your PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>: ' + payload.comment.body + '\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
       }
@@ -100,7 +102,7 @@ app.post('/', function(req, res) {
       text: text,
       username: slackBotUsername,
       icon_url: slackBotIconURL
-    }, handleResponse);
+    }, handleResponse(res));
   } else if (resType == ResType.API) {
     slackAPI.api('chat.postMessage', {
       text: text,

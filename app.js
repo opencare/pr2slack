@@ -81,7 +81,9 @@ app.post('/', function(req, res) {
 
   // Issue comment
   if (ghEvent == 'issue_comment' && payload.comment) {
-    var shipitGiven = /^([A-Za-z1-9_+-]{1}\s*)+$/.test(payload.comment.body);
+    var shipitUnicode = /^([\uD800-\uDBFF][\uDC00-\uDFFF]\s*)+$/.test(payload.comment.body);
+    var shipitRegular = /^(:[A-Za-z1-9_+-]+:\s*)+$/.test(payload.comment.body);
+    var shipitGiven = shipitUnicode || shipitRegular;
     // Shipit given
     if (shipitGiven) {
       resType = ResType.Webhook;

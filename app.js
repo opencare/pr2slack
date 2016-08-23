@@ -57,6 +57,7 @@ app.post('/', function(req, res) {
   var ghEvent = req.headers['x-github-event'];
   var uri = process.env.SLACK_WEBHOOK_URI;
 
+  var text;
   var resType;
   var username;
 
@@ -64,12 +65,12 @@ app.post('/', function(req, res) {
   if (ghEvent == 'pull_request') {
     resType = ResType.Webhook;
     var prCreated = _.includes(['opened', 'reopened'], payload.action);
-    var releaseMerged = payload.action == 'closed';
+    var releaseMerged = payload.action == 'closed' && !!_.get(payload, 'pull_request.merged') && _.get(payload, 'pull_request.base.ref') == 'production';
     var prDataExists = !!_.get(payload, 'pull_request.base');
     if (prDataExists) {
       if (prCreated && payload.pull_request.base.ref != 'production') {
         text = ':rocket: ' + payload.pull_request.user.login + ' ' + payload.action + ' a pull request in <' + payload.pull_request.base.repo.html_url + '|' + (S(payload.pull_request.base.repo.name).escapeHTML().s) + '>\n*<' + payload.pull_request.html_url + '|' + (S(payload.pull_request.title).escapeHTML().s) + '>*';
-      } else if (releaseMerged && payload.action == 'closed' && payload.pull_request.merged && payload.pull_request.base.ref == 'production') {
+      } else if (releaseMerged) {
         uri = process.env.SLACK_RELEASE_WEBHOOK_URI;
         text = ':robot_face: ' + payload.pull_request.user.login + ' released <' + payload.pull_request.base.repo.html_url + '|' + (S(payload.pull_request.base.repo.name).escapeHTML().s) + '>\n\n';
         text += '*<' + payload.pull_request.html_url + '|' + (S(payload.pull_request.title).escapeHTML().s) + '>*\n\n';
@@ -80,7 +81,7 @@ app.post('/', function(req, res) {
   }
 
   // Issue comment
-  if (ghEvent == 'issue_comment' && payload.comment) {
+  if (ghEvent == 'issue_comment' && payload.action == 'created' && payload.comment) {
     var shipitUnicode = /^([\uD800-\uDBFF][\uDC00-\uDFFF]\s*)+$/.test(payload.comment.body);
     var shipitRegular = /^(:[A-Za-z1-9_+-]+:\s*)+$/.test(payload.comment.body);
     var shipitGiven = shipitUnicode || shipitRegular;
@@ -96,6 +97,10 @@ app.post('/', function(req, res) {
         text = payload.comment.user.login + ' commented on your PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>: ' + payload.comment.body + '\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
       }
     }
+  }
+
+  if (!text) {
+    return res.json(200);
   }
 
   if (resType == ResType.Webhook) {

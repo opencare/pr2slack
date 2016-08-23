@@ -64,12 +64,12 @@ app.post('/', function(req, res) {
   if (ghEvent == 'pull_request') {
     resType = ResType.Webhook;
     var prCreated = _.includes(['opened', 'reopened'], payload.action);
-    var releaseMerged = payload.action == 'closed';
+    var releaseMerged = payload.action == 'closed' && !!_.get(payload.pull_request.merged) && _.get(payload.pull_request.base.ref) == 'production';
     var prDataExists = !!_.get(payload, 'pull_request.base');
     if (prDataExists) {
       if (prCreated && payload.pull_request.base.ref != 'production') {
         text = ':rocket: ' + payload.pull_request.user.login + ' ' + payload.action + ' a pull request in <' + payload.pull_request.base.repo.html_url + '|' + (S(payload.pull_request.base.repo.name).escapeHTML().s) + '>\n*<' + payload.pull_request.html_url + '|' + (S(payload.pull_request.title).escapeHTML().s) + '>*';
-      } else if (releaseMerged && payload.action == 'closed' && payload.pull_request.merged && payload.pull_request.base.ref == 'production') {
+      } else if (releaseMerged) {
         uri = process.env.SLACK_RELEASE_WEBHOOK_URI;
         text = ':robot_face: ' + payload.pull_request.user.login + ' released <' + payload.pull_request.base.repo.html_url + '|' + (S(payload.pull_request.base.repo.name).escapeHTML().s) + '>\n\n';
         text += '*<' + payload.pull_request.html_url + '|' + (S(payload.pull_request.title).escapeHTML().s) + '>*\n\n';

@@ -57,6 +57,7 @@ app.post('/', function(req, res) {
   var ghEvent = req.headers['x-github-event'];
   var uri = process.env.SLACK_WEBHOOK_URI;
 
+  var text;
   var resType;
   var username;
 
@@ -80,7 +81,7 @@ app.post('/', function(req, res) {
   }
 
   // Issue comment
-  if (ghEvent == 'issue_comment' && payload.comment) {
+  if (ghEvent == 'issue_comment' && payload.action == 'created' && payload.comment) {
     var shipitUnicode = /^([\uD800-\uDBFF][\uDC00-\uDFFF]\s*)+$/.test(payload.comment.body);
     var shipitRegular = /^(:[A-Za-z1-9_+-]+:\s*)+$/.test(payload.comment.body);
     var shipitGiven = shipitUnicode || shipitRegular;
@@ -96,6 +97,10 @@ app.post('/', function(req, res) {
         text = payload.comment.user.login + ' commented on your PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>: ' + payload.comment.body + '\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
       }
     }
+  }
+
+  if (!text) {
+    return res.json(200);
   }
 
   if (resType == ResType.Webhook) {

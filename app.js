@@ -65,7 +65,7 @@ app.post('/', function(req, res) {
   if (ghEvent == 'pull_request') {
     resType = ResType.Webhook;
     var prCreated = _.includes(['opened', 'reopened'], payload.action);
-    var releaseMerged = payload.action == 'closed' && !!_.get(payload.pull_request.merged) && _.get(payload.pull_request.base.ref) == 'production';
+    var releaseMerged = payload.action == 'closed' && !!_.get(payload, 'pull_request.merged') && _.get(payload, 'pull_request.base.ref') == 'production';
     var prDataExists = !!_.get(payload, 'pull_request.base');
     if (prDataExists) {
       if (prCreated && payload.pull_request.base.ref != 'production') {

@@ -99,6 +99,14 @@ app.post('/', function(req, res) {
     }
   }
 
+  // Commit comment
+  if (ghEvent == 'commit_comment' && payload.action == 'created' && payload.comment) {
+    if (payload.comment.user.login in githubToSlack) {
+        username = githubToSlack[payload.issue.user.login];
+        text = payload.comment.user.login + ' commented on your PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>: ' + payload.comment.body + '\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
+    }
+  }
+
   if (!text) {
     return res.json(200);
   }

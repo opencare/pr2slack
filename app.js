@@ -1,6 +1,7 @@
+'use strict';
+
 var express = require('express');
 var logfmt = require('logfmt');
-var request = require('request');
 var _ = require('lodash');
 var Slack = require('slack-node');
 var S = require('string');
@@ -42,7 +43,7 @@ var ResType = {
 };
 
 var handleResponse = function(res) {
-  return function(err, response) {
+  return function(err) {
     if (err) {
       return res.json(500, err);
     } else {
@@ -102,8 +103,8 @@ app.post('/', function(req, res) {
   // Commit comment
   if (ghEvent == 'commit_comment' && payload.action == 'created' && payload.comment) {
     if (payload.comment.user.login in githubToSlack) {
-        username = githubToSlack[payload.issue.user.login];
-        text = payload.comment.user.login + ' commented on your PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>: ' + payload.comment.body + '\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
+      username = githubToSlack[payload.issue.user.login];
+      text = payload.comment.user.login + ' commented on your PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>: ' + payload.comment.body + '\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
     }
   }
 
@@ -128,8 +129,10 @@ app.post('/', function(req, res) {
   }
 });
 
-port = !!process.env.PORT ? process.env.PORT : 5000;
+var port = !!process.env.PORT ? process.env.PORT : 5000;
 
-app.listen(port, function() {
+var server = app.listen(port, function() {
   return console.log('Listening on ' + port);
 });
+
+module.exports = server;

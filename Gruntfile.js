@@ -52,7 +52,13 @@ module.exports = function(grunt) {
           ignoredFiles: ['node_modules/**', '.tmp/**', 'test/**', '.git', 'logs', '**.swp', 'sessions', '*.log'],
           // nodeArgs: ['--debug'],
           env: {
-            'NODE_ENV': 'development'
+            NODE_ENV: 'development',
+            PORT: 5000,
+            USERNAME: 'hey',
+            PASSWORD: 'a',
+            SLACK_WEBHOOK_URI: 'b',
+            SLACK_RELEASE_WEBHOOK_URI: 'c',
+            SLACK_API_TOKEN: 'd'
           }
         }
       }
@@ -102,7 +108,13 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-env');
     grunt.config.set('env', {
       test: {
-        NODE_ENV: 'test'
+        NODE_ENV: 'test',
+        PORT: 5000,
+        USERNAME: 'hey',
+        PASSWORD: 'a',
+        SLACK_WEBHOOK_URI: 'b',
+        SLACK_RELEASE_WEBHOOK_URI: 'c',
+        SLACK_API_TOKEN: 'd'
       }
     });
 

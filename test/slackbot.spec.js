@@ -1,14 +1,15 @@
 'use strict';
 
-// var assert = require('assert');
-// var request = require('request');
-
 describe('slackbot', function() {
-  // var url = 'http://localhost:8080/';
+  var url = 'http://localhost:5000/';
 
   describe('pull_request', function() {
     it('should not do anything if the PR is not being opened/reopened/closed', function(done) {
-      done();
+      request.post(url, function(error, response) {
+        assert.equal(response.statusCode, 200);
+        done();
+      });
+      // done();
     });
 
     it('should send a message on opening a pull request', function(done) {

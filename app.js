@@ -5,6 +5,7 @@ var logfmt = require('logfmt');
 var _ = require('lodash');
 var Slack = require('slack-node');
 var S = require('string');
+var common = require('./common');
 
 var slackBotUsername = 'github';
 var slackBotIconURL = 'https://slack-assets2.s3-us-west-2.amazonaws.com/10562/img/services/github_48.png';
@@ -27,21 +28,6 @@ app.use(express.bodyParser());
 var slackWebhook = new Slack();
 var slackAPI = new Slack(process.env.SLACK_API_TOKEN);
 
-var githubToSlack = {
-  camthesixth: 'cam',
-  davidjconnolly: 'dave',
-  leeopencare: 'lee',
-  paulfeltoe: 'paul',
-  nivivon: 'nivivon',
-  RonenA: 'ronen',
-  'vadim-zverugo': 'vadim'
-};
-
-var ResType = {
-  Webhook: 0,
-  API: 1
-};
-
 var handleResponse = function(res) {
   return function(err) {
     if (err) {
@@ -62,10 +48,10 @@ app.post('/', function(req, res) {
   var username;
 
   // PR
-  if (ghEvent == 'pull_request') {
-    resType = ResType.Webhook;
-    var prCreated = _.includes(['opened', 'reopened'], payload.action);
-    var releaseMerged = payload.action == 'closed' && !!_.get(payload, 'pull_request.merged') && _.get(payload, 'pull_request.base.ref') == 'production';
+  if (ghEvent == common.GithubEvent.PullRequest) {
+    resType = common.ResType.Webhook;
+    var prCreated = _.includes([common.Action.Opened, common.Action.Reopened], payload.action);
+    var releaseMerged = payload.action == common.Action.Closed && !!_.get(payload, 'pull_request.merged') && _.get(payload, 'pull_request.base.ref') == 'production';
     var prDataExists = !!_.get(payload, 'pull_request.base');
     if (prDataExists) {
       if (prCreated && payload.pull_request.base.ref != 'production') {
@@ -80,30 +66,21 @@ app.post('/', function(req, res) {
     }
   }
 
-  // Issue comment
-  if (ghEvent == 'issue_comment' && payload.action == 'created' && payload.comment) {
+  // Issue/commit comment
+  if ((ghEvent == common.GithubEvent.IssueComment || ghEvent == common.GithubEvent.CommitComment) && payload.action == common.Action.Created && payload.comment) {
     var shipitUnicode = /^([\uD800-\uDBFF][\uDC00-\uDFFF]\s*)+$/.test(payload.comment.body);
     var shipitRegular = /^(:[A-Za-z1-9_+-]+:\s*)+$/.test(payload.comment.body);
     var shipitGiven = shipitUnicode || shipitRegular;
     // Shipit given
     if (shipitGiven) {
-      resType = ResType.Webhook;
+      resType = common.ResType.Webhook;
       text = payload.comment.body + ' from ' + payload.comment.user.login + '! on a PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
     } else { // Feedback given
-      resType = ResType.API;
-
-      if (payload.comment.user.login in githubToSlack) {
-        username = githubToSlack[payload.issue.user.login];
+      resType = common.ResType.API;
+      if (payload.comment.user.login in common.GithubToSlack) {
+        username = common.GithubToSlack[payload.issue.user.login];
         text = payload.comment.user.login + ' commented on your PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>: ' + payload.comment.body + '\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
       }
-    }
-  }
-
-  // Commit comment
-  if (ghEvent == 'commit_comment' && payload.action == 'created' && payload.comment) {
-    if (payload.comment.user.login in githubToSlack) {
-      username = githubToSlack[payload.issue.user.login];
-      text = payload.comment.user.login + ' commented on your PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>: ' + payload.comment.body + '\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
     }
   }
 
@@ -112,7 +89,7 @@ app.post('/', function(req, res) {
   }
 
   var options;
-  if (resType == ResType.Webhook) {
+  if (resType == common.ResType.Webhook) {
     slackWebhook.setWebhook(uri);
     options = {
       text: text,
@@ -120,12 +97,12 @@ app.post('/', function(req, res) {
       icon_url: slackBotIconURL
     };
     if (process.env.NODE_ENV === 'test') {
-      return res.json(200, _.merge(options, {
-        "ResType": "Webhook"
+      return res.json(_.merge(options, {
+        resType: "Webhook"
       }));
     }
     slackWebhook.webhook(options, handleResponse(res));
-  } else if (resType == ResType.API) {
+  } else if (resType == common.ResType.API) {
     options = {
       text: text,
       channel: '@' + username,
@@ -134,7 +111,7 @@ app.post('/', function(req, res) {
     };
     if (process.env.NODE_ENV === 'test') {
       return res.json(200, _.merge(options, {
-        "ResType": "API"
+        resType: "API"
       }));
     }
     slackAPI.api('chat.postMessage', options, handleResponse(res));

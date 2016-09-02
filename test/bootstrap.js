@@ -3,9 +3,11 @@
 var uuid = require('node-uuid'),
   seedrandom = require('seedrandom');
 
+global._ = require('lodash');
 global.assert = require('assert');
 global.request = require('request');
-// global.factories = require('../test/factories');
+global.common = require('../common');
+global.factories = require('../test/factories');
 
 var app;
 

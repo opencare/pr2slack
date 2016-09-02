@@ -1,11 +1,12 @@
 'use strict';
 
 describe('slackbot', function() {
-  var url = 'http://localhost:5000/';
+  var url = 'http://' + process.env.USERNAME + ':' + process.env.PASSWORD + '@localhost:5000/';
 
   describe('pull_request', function() {
     it('should not do anything if the PR is not being opened/reopened/closed', function(done) {
-      request.post(url, function(error, response) {
+      request.post(url, function(error, response, body) {
+        console.log(body);
         assert.equal(response.statusCode, 200);
         done();
       });

@@ -53,7 +53,6 @@ var handleResponse = function(res) {
 };
 
 app.post('/', function(req, res) {
-
   var payload = req.body;
   var ghEvent = req.headers['x-github-event'];
   var uri = process.env.SLACK_WEBHOOK_URI;
@@ -112,20 +111,33 @@ app.post('/', function(req, res) {
     return res.json(200);
   }
 
+  var options;
   if (resType == ResType.Webhook) {
     slackWebhook.setWebhook(uri);
-    slackWebhook.webhook({
+    options = {
       text: text,
       username: slackBotUsername,
       icon_url: slackBotIconURL
-    }, handleResponse(res));
+    };
+    if (process.env.NODE_ENV === 'test') {
+      return res.json(200, _.merge(options, {
+        "ResType": "Webhook"
+      }));
+    }
+    slackWebhook.webhook(options, handleResponse(res));
   } else if (resType == ResType.API) {
-    slackAPI.api('chat.postMessage', {
+    options = {
       text: text,
       channel: '@' + username,
       username: slackBotUsername,
       icon_url: slackBotIconURL
-    }, handleResponse(res));
+    };
+    if (process.env.NODE_ENV === 'test') {
+      return res.json(200, _.merge(options, {
+        "ResType": "API"
+      }));
+    }
+    slackAPI.api('chat.postMessage', options, handleResponse(res));
   }
 });
 

@@ -110,8 +110,8 @@ module.exports = function(grunt) {
       test: {
         NODE_ENV: 'test',
         PORT: 5000,
-        USERNAME: 'hey',
-        PASSWORD: 'a',
+        USERNAME: 'TEST_USERNAME',
+        PASSWORD: 'TEST_PASSWORD',
         SLACK_WEBHOOK_URI: 'b',
         SLACK_RELEASE_WEBHOOK_URI: 'c',
         SLACK_API_TOKEN: 'd'

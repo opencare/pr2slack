@@ -6,7 +6,6 @@ describe('slackbot', function() {
   describe('pull_request', function() {
     it('should not do anything if the PR is not being opened/reopened/closed', function(done) {
       request.post(url, function(error, response, body) {
-        console.log(body);
         assert.equal(response.statusCode, 200);
         done();
       });

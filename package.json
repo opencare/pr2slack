@@ -4,7 +4,7 @@
   "description": "PR -> Slack",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node debug `which grunt` test"
   },
   "author": "Opencare",
   "dependencies": {
@@ -12,8 +12,22 @@
     "lodash": "^3.1.0",
     "logfmt": "~0.20.0",
     "request": "~2.33.0",
+    "grunt": "^0.4.5",
+    "grunt-env": "^0.4.4",
+    "grunt-opencare": "git+https://aef72b13ac0ab78d83d381e730819dd83b5158d7:x-oauth-basic@github.com/opencare/grunt-opencare.git",
     "slack-node": "^0.2.0",
     "string": "^1.6.1"
+  },
+  "devDependencies": {
+    "Faker": "^0.7.0",
+    "grunt-cli": "~0.1.11",
+    "grunt-contrib-jshint": "0.12.0",
+    "grunt-shell": "~0.7.0",
+    "grunt-jsbeautifier": "0.2.7",
+    "grunt-mocha-test": "~0.8.1",
+    "grunt-nodemon": "~0.1.2",
+    "jshint-stylish": "^0.1.5",
+    "request": "2.37.0"
   },
   "engines": {
     "node": "0.10.x"

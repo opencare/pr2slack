@@ -79,7 +79,7 @@ app.post('/', function(req, res) {
       resType = common.ResType.API;
       if (!(payload.issue.user.login in common.Github.ToSlack)) {
         return res.json(400, {
-          error: payload.issue.user.login + " is not defined"
+          error: payload.issue.user.login + ' is not defined'
         });
       }
       username = common.Github.ToSlack[payload.issue.user.login];
@@ -92,33 +92,20 @@ app.post('/', function(req, res) {
     return res.json(200);
   }
 
-  var options;
   if (resType == common.ResType.Webhook) {
     slackWebhook.setWebhook(uri);
-    options = {
+    slackWebhook.webhook({
       text: text,
       username: slackBotUsername,
       icon_url: slackBotIconURL
-    };
-    if (process.env.NODE_ENV === 'test') {
-      return res.json(_.merge(options, {
-        resType: common.ResType.Webhook
-      }));
-    }
-    slackWebhook.webhook(options, handleResponse(res));
+    }, handleResponse(res));
   } else if (resType == common.ResType.API) {
-    options = {
+    slackAPI.api('chat.postMessage', {
       text: text,
       channel: '@' + username,
       username: slackBotUsername,
       icon_url: slackBotIconURL
-    };
-    if (process.env.NODE_ENV === 'test') {
-      return res.json(200, _.merge(options, {
-        resType: common.ResType.API
-      }));
-    }
-    slackAPI.api('chat.postMessage', options, handleResponse(res));
+    }, handleResponse(res));
   }
 });
 

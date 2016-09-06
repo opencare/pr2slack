@@ -7,8 +7,6 @@ module.exports = function(grunt) {
   grunt.initConfig({});
   grunt.loadTasks('tasks');
   grunt.registerTask('prod', []);
-  gruntOc.tasks.tunnel(grunt);
-  gruntOc.tasks.release(grunt);
 
   var srcFiles = ['**/*.js', '!node_modules/**/*.js', '!test/**/*.js', '!.tmp/**/*.js'];
   var testFiles = ['test/*.js'];
@@ -21,25 +19,13 @@ module.exports = function(grunt) {
     'assert',
     'factories',
     'Faker',
-    'request',
-    'authCommon'
+    'request'
   ];
 
   var srcGlobals = [
     '_',
     'Q',
-    'S',
-    'moment',
-    'sails',
-    'constants',
-    'SentryHuckleberry',
-    'stripe',
-    'analytics',
-    'OCPermissionError',
-    'OCUnprocessableEntityError',
-    'OCValidationError',
-    'OCUnauthorizedError',
-    'OCSoftDeleteError'
+    'S'
   ];
 
   if (process.env.NODE_ENV !== 'production') {
@@ -112,13 +98,12 @@ module.exports = function(grunt) {
         PORT: 8080,
         USERNAME: 'TEST_USERNAME',
         PASSWORD: 'TEST_PASSWORD',
-        SLACK_WEBHOOK_URI: 'b',
-        SLACK_RELEASE_WEBHOOK_URI: 'c',
-        SLACK_API_TOKEN: 'd'
+        SLACK_WEBHOOK_URI: 'https://hooks.slack.com/services/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',
+        SLACK_RELEASE_WEBHOOK_URI: 'https://hooks.slack.com/services/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',
+        SLACK_API_TOKEN: 'TEST_TOKEN'
       }
     });
 
     grunt.registerTask('run', ['nodemon:dev']);
-    grunt.registerTask('tunnel', ['ngrok:api:tls:1337', 'run']);
   }
 };

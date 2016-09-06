@@ -5,7 +5,6 @@ module.exports.ResType = {
   API: 1
 };
 
-// GitHub Constants
 module.exports.Github = {
   ToSlack: {
     camthesixth: 'cam',

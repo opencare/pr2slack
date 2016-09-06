@@ -6,7 +6,6 @@ var uuid = require('node-uuid'),
 global._ = require('lodash');
 global.assert = require('assert');
 global.request = require('request');
-global.common = require('../common');
 global.factories = require('../test/factories');
 
 var app;

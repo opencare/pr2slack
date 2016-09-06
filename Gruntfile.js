@@ -109,7 +109,7 @@ module.exports = function(grunt) {
     grunt.config.set('env', {
       test: {
         NODE_ENV: 'test',
-        PORT: 5000,
+        PORT: 8080,
         USERNAME: 'TEST_USERNAME',
         PASSWORD: 'TEST_PASSWORD',
         SLACK_WEBHOOK_URI: 'b',

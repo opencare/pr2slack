@@ -48,10 +48,10 @@ app.post('/', function(req, res) {
   var username;
 
   // PR
-  if (ghEvent == common.GithubEvent.PullRequest) {
+  if (ghEvent == common.Github.Event.PullRequest) {
     resType = common.ResType.Webhook;
-    var prCreated = _.includes([common.Action.Opened, common.Action.Reopened], payload.action);
-    var releaseMerged = payload.action == common.Action.Closed && !!_.get(payload, 'pull_request.merged') && _.get(payload, 'pull_request.base.ref') == 'production';
+    var prCreated = _.includes([common.Github.Action.Opened, common.Github.Action.Reopened], payload.action);
+    var releaseMerged = payload.action == common.Github.Action.Closed && !!_.get(payload, 'pull_request.merged') && _.get(payload, 'pull_request.base.ref') == 'production';
     var prDataExists = !!_.get(payload, 'pull_request.base');
     if (prDataExists) {
       if (prCreated && payload.pull_request.base.ref != 'production') {
@@ -67,7 +67,7 @@ app.post('/', function(req, res) {
   }
 
   // Issue/commit comment
-  if ((ghEvent == common.GithubEvent.IssueComment || ghEvent == common.GithubEvent.CommitComment) && payload.action == common.Action.Created && payload.comment) {
+  if ((ghEvent == common.Github.Event.IssueComment || ghEvent == common.Github.Event.CommitComment) && payload.action == common.Github.Action.Created && payload.comment) {
     var shipitUnicode = /^([\uD800-\uDBFF][\uDC00-\uDFFF]\s*)+$/.test(payload.comment.body);
     var shipitRegular = /^(:[A-Za-z1-9_+-]+:\s*)+$/.test(payload.comment.body);
     var shipitGiven = shipitUnicode || shipitRegular;
@@ -77,10 +77,14 @@ app.post('/', function(req, res) {
       text = payload.comment.body + ' from ' + payload.comment.user.login + '! on a PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
     } else { // Feedback given
       resType = common.ResType.API;
-      if (payload.comment.user.login in common.GithubToSlack) {
-        username = common.GithubToSlack[payload.issue.user.login];
-        text = payload.comment.user.login + ' commented on your PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>: ' + payload.comment.body + '\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
+      if (!(payload.issue.user.login in common.Github.ToSlack)) {
+        return res.json(400, {
+          error: payload.issue.user.login + " is not defined"
+        });
       }
+      username = common.Github.ToSlack[payload.issue.user.login];
+      text = payload.comment.user.login + ' commented on your PR in <' + payload.repository.html_url + '|' + payload.repository.name + '>: ' + payload.comment.body + '\n<' + payload.issue.html_url + '|' + payload.issue.title + '>';
+
     }
   }
 
@@ -98,7 +102,7 @@ app.post('/', function(req, res) {
     };
     if (process.env.NODE_ENV === 'test') {
       return res.json(_.merge(options, {
-        resType: "Webhook"
+        resType: common.ResType.Webhook
       }));
     }
     slackWebhook.webhook(options, handleResponse(res));
@@ -111,7 +115,7 @@ app.post('/', function(req, res) {
     };
     if (process.env.NODE_ENV === 'test') {
       return res.json(200, _.merge(options, {
-        resType: "API"
+        resType: common.ResType.API
       }));
     }
     slackAPI.api('chat.postMessage', options, handleResponse(res));

@@ -59,7 +59,7 @@ module.exports = {
 
   PullRequestFactory: new Factory('PullRequest', {
     headers: {
-      'x-github-event': common.GithubEvent.PullRequest
+      'x-github-event': common.Github.Event.PullRequest
     },
     json: {
       action: 'opened', // modifiable
@@ -85,7 +85,7 @@ module.exports = {
 
   IssueCommentFactory: new Factory('IssueComment', {
     headers: {
-      'x-github-event': common.GithubEvent.IssueComment
+      'x-github-event': common.Github.Event.IssueComment
     },
     json: {
       action: 'opened',
@@ -101,7 +101,7 @@ module.exports = {
       },
       issue: {
         user: {
-          login: 'ronenA'
+          login: 'RonenA'
         },
         html_url: 'example.com', //m modifiable
         title: 'example' // modifiable
@@ -111,7 +111,7 @@ module.exports = {
 
   CommitCommentFactory: new Factory('CommitComment', {
     headers: {
-      'x-github-event': common.GithubEvent.CommitComment
+      'x-github-event': common.Github.Event.CommitComment
     },
     json: {
       action: 'opened', // modifiable
@@ -129,7 +129,7 @@ module.exports = {
       },
       issue: {
         user: {
-          login: 'ronenA'
+          login: 'RonenA'
         },
         html_url: 'example.com', //m modifiable
         title: 'example' // modifiable

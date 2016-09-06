@@ -14,9 +14,9 @@
     "request": "~2.33.0",
     "grunt": "^0.4.5",
     "grunt-env": "^0.4.4",
-    "grunt-opencare": "git+https://f1614114ec13780bc0dc9e7bf569d335c36ff80c:x-oauth-basic@github.com/opencare/grunt-opencare.git",
     "slack-node": "^0.2.0",
-    "string": "^1.6.1"
+    "string": "^1.6.1",
+    "nock": "^1.6.1"
   },
   "devDependencies": {
     "Faker": "^0.7.0",

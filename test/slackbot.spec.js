@@ -15,7 +15,6 @@ describe('slackbot', function() {
   var nock;
   before(function() {
     nock = require('nock');
-    // nock.recorder.rec();
     nock.enableNetConnect('localhost');
   });
 
@@ -36,13 +35,12 @@ describe('slackbot', function() {
     it('should send a message on opening a pull request', function(done) {
       nock('https://hooks.slack.com:443')
         .post('/services/T024HT77N/B035LH8PN/IzKEPzLeV2rTNWway46FAwdu', {
-          "response_type": "ephemeral",
-          "text": ":rocket: nivivon opened a pull request in <example.com|example>\n*<example.com|test pr>*",
-          "username": "github",
-          "link_names": 0,
-          "icon_emoji": ""
-        })
-        .reply(200, "ok");
+          'response_type': 'ephemeral',
+          'text': ':rocket: nivivon opened a pull request in <example.com|example>\n*<example.com|test pr>*',
+          'username': 'github',
+          'link_names': 0,
+          'icon_emoji': ''
+        }).reply(200, 'ok');
       var pr = {
         headers: {
           'x-github-event': 'pull_request'
@@ -78,13 +76,12 @@ describe('slackbot', function() {
     it('should send a message on reopening a pull request', function(done) {
       nock('https://hooks.slack.com:443')
         .post('/services/T024HT77N/B035LH8PN/IzKEPzLeV2rTNWway46FAwdu', {
-          "response_type": "ephemeral",
-          "text": ":rocket: nivivon reopened a pull request in <example.com|example>\n*<example.com|test pr>*",
-          "username": "github",
-          "link_names": 0,
-          "icon_emoji": ""
-        })
-        .reply(200, "ok");
+          'response_type': 'ephemeral',
+          'text': ':rocket: nivivon reopened a pull request in <example.com|example>\n*<example.com|test pr>*',
+          'username': 'github',
+          'link_names': 0,
+          'icon_emoji': ''
+        }).reply(200, 'ok');
 
       var pr = {
         headers: {
@@ -155,13 +152,12 @@ describe('slackbot', function() {
     it('should send a release message on closing a production branch', function(done) {
       nock('https://hooks.slack.com:443')
         .post('/services/T024HT77N/B0S7G04HH/6Xm8mqSVSGzpV8Pt6IkexkF0', {
-          "response_type": "ephemeral",
-          "text": ":robot_face: nivivon released <example.com|example>\n\n*<example.com|test pr>*\n\nrandom",
-          "username": "github",
-          "link_names": 0,
-          "icon_emoji": ""
-        })
-        .reply(200, "ok");
+          'response_type': 'ephemeral',
+          'text': ':robot_face: nivivon released <example.com|example>\n\n*<example.com|test pr>*\n\nrandom',
+          'username': 'github',
+          'link_names': 0,
+          'icon_emoji': ''
+        }).reply(200, 'ok');
 
       var pr = {
         headers: {
@@ -234,13 +230,12 @@ describe('slackbot', function() {
     it('should send a shipit to the channel if a unicode emoji was sent', function(done) {
       nock('https://hooks.slack.com:443')
         .post('/services/T024HT77N/B035LH8PN/IzKEPzLeV2rTNWway46FAwdu', {
-          "response_type": "ephemeral",
-          "text": emoji + " from nivivon! on a PR in <example.com|example>\n<example.com|example>",
-          "username": "github",
-          "link_names": 0,
-          "icon_emoji": ""
-        })
-        .reply(200, "ok");
+          'response_type': 'ephemeral',
+          'text': emoji + ' from nivivon! on a PR in <example.com|example>\n<example.com|example>',
+          'username': 'github',
+          'link_names': 0,
+          'icon_emoji': ''
+        }).reply(200, 'ok');
 
       var ic = {
         headers: {
@@ -277,13 +272,12 @@ describe('slackbot', function() {
     it('should send a shipit to the channel if a regular emoji was sent', function(done) {
       nock('https://hooks.slack.com:443')
         .post('/services/T024HT77N/B035LH8PN/IzKEPzLeV2rTNWway46FAwdu', {
-          "response_type": "ephemeral",
-          "text": ":shipit: from nivivon! on a PR in <example.com|example>\n<example.com|example>",
-          "username": "github",
-          "link_names": 0,
-          "icon_emoji": ""
-        })
-        .reply(200, "ok");
+          'response_type': 'ephemeral',
+          'text': ':shipit: from nivivon! on a PR in <example.com|example>\n<example.com|example>',
+          'username': 'github',
+          'link_names': 0,
+          'icon_emoji': ''
+        }).reply(200, 'ok');
 
       var ic = {
         headers: {
@@ -346,7 +340,7 @@ describe('slackbot', function() {
 
       request.post(url, ic, function(error, response, body) {
         assert.equal(response.statusCode, 400);
-        assert.equal(body.error, ic.json.issue.user.login + " is not defined");
+        assert.equal(body.error, ic.json.issue.user.login + ' is not defined');
         done();
       });
     });
@@ -434,13 +428,12 @@ describe('slackbot', function() {
     it('should send a shipit to the channel if a unicode emoji was sent', function(done) {
       nock('https://hooks.slack.com:443')
         .post('/services/T024HT77N/B035LH8PN/IzKEPzLeV2rTNWway46FAwdu', {
-          "response_type": "ephemeral",
-          "text": emoji + " from nivivon! on a PR in <example.com|example>\n<example.com|example>",
-          "username": "github",
-          "link_names": 0,
-          "icon_emoji": ""
-        })
-        .reply(200, "ok");
+          'response_type': 'ephemeral',
+          'text': emoji + ' from nivivon! on a PR in <example.com|example>\n<example.com|example>',
+          'username': 'github',
+          'link_names': 0,
+          'icon_emoji': ''
+        }).reply(200, 'ok');
 
       var cc = {
         headers: {
@@ -477,13 +470,12 @@ describe('slackbot', function() {
     it('should send a shipit to the channel if a regular emoji was sent', function(done) {
       nock('https://hooks.slack.com:443')
         .post('/services/T024HT77N/B035LH8PN/IzKEPzLeV2rTNWway46FAwdu', {
-          "response_type": "ephemeral",
-          "text": ":shipit: from nivivon! on a PR in <example.com|example>\n<example.com|example>",
-          "username": "github",
-          "link_names": 0,
-          "icon_emoji": ""
-        })
-        .reply(200, "ok");
+          'response_type': 'ephemeral',
+          'text': ':shipit: from nivivon! on a PR in <example.com|example>\n<example.com|example>',
+          'username': 'github',
+          'link_names': 0,
+          'icon_emoji': ''
+        }).reply(200, 'ok');
 
       var cc = {
         headers: {
@@ -546,7 +538,7 @@ describe('slackbot', function() {
 
       request.post(url, cc, function(error, response, body) {
         assert.equal(response.statusCode, 400);
-        assert.equal(body.error, cc.json.issue.user.login + " is not defined");
+        assert.equal(body.error, cc.json.issue.user.login + ' is not defined');
         done();
       });
     });
